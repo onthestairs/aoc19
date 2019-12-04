@@ -1,5 +1,6 @@
 module Solve.Day3 where
 
+import Data.Functor.Foldable
 import qualified Data.List as List
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
@@ -36,16 +37,35 @@ parseAndSolve1 = do
     i <- input
     solve1 i
 
-findPath [] _ = Set.empty
-findPath ((Left n) : ms) (x, y) = Set.fromList [(x - z, y) | z <- [1 .. n]] `Set.union` findPath ms (x - n, y)
-findPath ((Right n) : ms) (x, y) = Set.fromList [(x + z, y) | z <- [1 .. n]] `Set.union` findPath ms (x + n, y)
-findPath ((Up n) : ms) (x, y) = Set.fromList [(x, y - z) | z <- [1 .. n]] `Set.union` findPath ms (x, y - n)
-findPath ((Down n) : ms) (x, y) = Set.fromList [(x, y + z) | z <- [1 .. n]] `Set.union` findPath ms (x, y + n)
+move (Left n) (x, y) = (x - n, y)
+move (Right n) (x, y) = (x + n, y)
+move (Up n) (x, y) = (x, y - n)
+move (Down n) (x, y) = (x, y + n)
+
+pathLength (Left n) = n
+pathLength (Right n) = n
+pathLength (Up n) = n
+pathLength (Down n) = n
+
+fst3 (x, y, z) = x
+
+runPath :: Monoid m => ((Move, Int, (Int, Int)) -> m) -> [Move] -> m
+runPath f ps = fst3 $ cata alg (reverse ps)
+  where
+    alg Nil = (mempty, 0, (0, 0))
+    alg (Cons p (m, c, pos)) = (m <> f (p, c, pos), c + (pathLength p), move p pos)
+
+makePath (Left n) _ (x, y) = [(x - z, y) | z <- [1 .. n]]
+makePath (Right n) _ (x, y) = [(x + z, y) | z <- [1 .. n]]
+makePath (Up n) _ (x, y) = [(x, y - z) | z <- [1 .. n]]
+makePath (Down n) _ (x, y) = [(x, y + z) | z <- [1 .. n]]
+
+findPath = runPath (\(p, c, pos) -> Set.fromList $ makePath p c pos)
 
 solve1 :: Input -> Maybe Int
 solve1 (ms, ms') =
-  let path1 = findPath ms (0, 0)
-      path2 = findPath ms' (0, 0)
+  let path1 = findPath ms
+      path2 = findPath ms'
       crossers = Set.intersection path1 path2
    in viaNonEmpty minimum1 [abs x + abs y | (x, y) <- toList crossers]
 
@@ -56,14 +76,15 @@ parseAndSolve2 = do
     i <- input
     solve2 i
 
-makeVisitedMap [] _ _ = Map.empty
-makeVisitedMap ((Left n) : ms) c (x, y) = Map.fromList [((x - z, y), c + z) | z <- [1 .. n]] `Map.union` makeVisitedMap ms (c + n) (x - n, y)
-makeVisitedMap ((Right n) : ms) c (x, y) = Map.fromList [((x + z, y), c + z) | z <- [1 .. n]] `Map.union` makeVisitedMap ms (c + n) (x + n, y)
-makeVisitedMap ((Up n) : ms) c (x, y) = Map.fromList [((x, y - z), c + z) | z <- [1 .. n]] `Map.union` makeVisitedMap ms (c + n) (x, y - n)
-makeVisitedMap ((Down n) : ms) c (x, y) = Map.fromList [((x, y + z), c + z) | z <- [1 .. n]] `Map.union` makeVisitedMap ms (c + n) (x, y + n)
+makeVisitedAtMap (Left n) c (x, y) = Map.fromList [((x - z, y), c + z) | z <- [1 .. n]]
+makeVisitedAtMap (Right n) c (x, y) = Map.fromList [((x + z, y), c + z) | z <- [1 .. n]]
+makeVisitedAtMap (Up n) c (x, y) = Map.fromList [((x, y - z), c + z) | z <- [1 .. n]]
+makeVisitedAtMap (Down n) c (x, y) = Map.fromList [((x, y + z), c + z) | z <- [1 .. n]]
+
+makeVisitedMap = runPath (\(p, c, pos) -> makeVisitedAtMap p c pos)
 
 solve2 (ms, ms') =
-  let map1 = makeVisitedMap ms 0 (0, 0)
-      map2 = makeVisitedMap ms' 0 (0, 0)
+  let map1 = makeVisitedMap ms
+      map2 = makeVisitedMap ms'
       crossers = Map.intersectionWith (+) map1 map2
    in viaNonEmpty minimum1 (Map.elems crossers)

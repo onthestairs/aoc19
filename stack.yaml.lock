@@ -11,6 +11,27 @@ packages:
       sha256: 1e4118716a2078385341d7df2f876b616744c3a8f945247766e60f48e32b3d1d
   original:
     hackage: base-noprelude-4.12.0.0@sha256:dcd5ece10257f79fa16e207d558b31ab3467b205adae5d1976abdee28b1c8b4a
+- completed:
+    hackage: micro-recursion-schemes-5.0.2.2@sha256:3e7e4e3aa4b1bb1f6b72add2804602db1460dae541dc1c59d1b741477879be7d,1869
+    pantry-tree:
+      size: 641
+      sha256: 698cb91cbc5a3bcd8a82417a4632db96aaf84bd70eb6783693be44f8f0593c53
+  original:
+    hackage: micro-recursion-schemes-5.0.2.2
+- completed:
+    hackage: template-haskell-2.13.0.0@sha256:555df4a4f47d358ce35f4c0f4371aa4347081fd00288e751838141d6fc7de627,1724
+    pantry-tree:
+      size: 850
+      sha256: f513144b2b69442682090a5c3303f0a0be1c465fcf0b1c14bc23af47872417ef
+  original:
+    hackage: template-haskell-2.13.0.0
+- completed:
+    hackage: th-abstraction-0.2.11.0@sha256:5c286870277705796887d0cbfa48a6aa5e0f206152592a54fbc550d8ce0c5ab5,1827
+    pantry-tree:
+      size: 583
+      sha256: 1e1b3b254c9021294bb7c9afbb079d75b8d03d2ea8b4b3aad94df5ad9e77ec11
+  original:
+    hackage: th-abstraction-0.2.11.0
 snapshots:
 - completed:
     size: 525662

@@ -1,5 +1,6 @@
 module Solve.Day1 where
 
+import Data.Functor.Foldable
 import Parsing
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -23,9 +24,11 @@ requiredFuel n = (n `div` 3) - 2
 solve1 ms = sum $ map requiredFuel ms
 
 requiredFuel2 :: Int -> Int
-requiredFuel2 n =
-  let baseFule = (n `div` 3) - 2
-   in if baseFule <= 0 then 0 else baseFule + requiredFuel2 baseFule
+requiredFuel2 = hylo alg coalg
+  where
+    alg (Cons a b) = a + b
+    alg Nil = 0
+    coalg n = let fuel = (n `div` 3) - 2 in if fuel <= 0 then Nil else Cons fuel fuel
 
 parseAndSolve2 :: IO (Maybe Int)
 parseAndSolve2 = do

@@ -1,8 +1,10 @@
 module Solve.Day4 where
 
+import Data.Functor.Foldable
 import Parsing
 import Text.Megaparsec
 import Text.Megaparsec.Char
+import Prelude hiding (product)
 
 type Input = (Int, Int)
 
@@ -18,9 +20,13 @@ parseAndSolve1 = do
   pure $ solve1 <$> input
 
 toDigits :: Int -> [Int]
-toDigits n
-  | n >= 10 = toDigits (n `div` 10) ++ [(n `mod` 10)]
-  | otherwise = [n]
+toDigits m = reverse $ ana coalg (Just m)
+  where
+    coalg :: (Maybe Int) -> ListF Int (Maybe Int)
+    coalg (Just n)
+      | n >= 10 = Cons (n `mod` 10) (Just (n `div` 10))
+      | otherwise = Cons n Nothing
+    coalg Nothing = Nil
 
 getPairs :: [a] -> [(a, a)]
 getPairs xs = case nonEmpty xs of

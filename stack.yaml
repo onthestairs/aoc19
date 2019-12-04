@@ -2,6 +2,11 @@ resolver: lts-14.15
 
 extra-deps:
   - base-noprelude-4.12.0.0@sha256:dcd5ece10257f79fa16e207d558b31ab3467b205adae5d1976abdee28b1c8b4a
+  - micro-recursion-schemes-5.0.2.2
+  - template-haskell-2.13.0.0
+  - th-abstraction-0.2.11.0
+
+allow-newer: true
 
 ghc-options:
   "$locals": -fhide-source-paths
