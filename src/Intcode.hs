@@ -13,7 +13,8 @@ type IntCode = Int
 
 data Memory
   = Memory
-      { _inputs :: [Int],
+      { _position :: Int,
+        _inputs :: [Int],
         _values :: Map.Map Int IntCode,
         _outputs :: [Int]
       }
@@ -53,30 +54,31 @@ getAtPosMode Position n = do
   n' <- getAtPos n
   getAtPos n'
 
-fAtPos pos m1 m2 f = do
+runBinaryF m1 m2 f = do
+  pos <- use position
   value1 <- getAtPosMode m1 (pos + 1)
   value2 <- getAtPosMode m2 (pos + 2)
   positionToSet <- getAtPos (pos + 3)
   setAtPos positionToSet (f value1 value2)
   pure ()
 
--- addAtPos :: Int -> State Memory ()
-addAtPos pos m1 m2 = fAtPos pos m1 m2 (+)
+add m1 m2 = runBinaryF m1 m2 (+)
 
--- multiplyAtPos :: Int -> State Memory ()
-multiplyAtPos pos m1 m2 = fAtPos pos m1 m2 (*)
+multiply m1 m2 = runBinaryF m1 m2 (*)
 
-setPosToInputValue pos = do
+setPosToInputValue = do
+  pos <- use position
   is <- use inputs
   case nonEmpty is of
-    Nothing -> pure ()
+    Nothing -> error "not enough inputs!"
     Just (i :| is') -> do
       newPos <- getAtPos (pos + 1)
       setAtPos newPos i
       assign inputs is'
       pure ()
 
-writeToOutput pos m1 = do
+writeToOutput m1 = do
+  pos <- use position
   value <- getAtPosMode m1 (pos + 1)
   modifying outputs (\os -> value : os)
   pure ()
@@ -88,9 +90,6 @@ getValueAtPos pos = do
   pure $ case maybeIntCode of
     Just intCode -> intCode
     Nothing -> error "noooo"
-
--- bitToParameterMode 0 = Position
--- bitToParameterMode 1 = Immediate
 
 getModeAtIndex :: [Int] -> Int -> ParameterMode
 getModeAtIndex ms i = case viaNonEmpty head (drop i ms) of
@@ -125,58 +124,69 @@ getOpAtPos pos = do
   n <- getValueAtPos pos
   pure $ getOp n
 
-data MovePos = NewPos Int | Noop
-
-jumpIfTrue pos m1 m2 = do
+jumpIfTrue m1 m2 = do
+  pos <- use position
   v1 <- getAtPosMode m1 (pos + 1)
   v2 <- getAtPosMode m2 (pos + 2)
   case v1 of
-    0 -> pure Noop
-    _ -> pure $ NewPos v2
+    0 -> modifying position (+ 3)
+    _ -> assign position v2
 
-jumpIfFalse pos m1 m2 = do
+jumpIfFalse m1 m2 = do
+  pos <- use position
   v1 <- getAtPosMode m1 (pos + 1)
   v2 <- getAtPosMode m2 (pos + 2)
   case v1 of
-    0 -> pure $ NewPos v2
-    _ -> pure Noop
+    0 -> assign position v2
+    _ -> modifying position (+ 3)
 
-lessThan pos m1 m2 = do
+lessThan m1 m2 = do
+  pos <- use position
   v1 <- getAtPosMode m1 (pos + 1)
   v2 <- getAtPosMode m2 (pos + 2)
   p <- getAtPos (pos + 3)
   case v1 < v2 of
     True -> setAtPos p 1
     False -> setAtPos p 0
+  modifying position (+ 4)
 
-equals pos m1 m2 = do
+equals m1 m2 = do
+  pos <- use position
   v1 <- getAtPosMode m1 (pos + 1)
   v2 <- getAtPosMode m2 (pos + 2)
   p <- getAtPos (pos + 3)
   case v1 == v2 of
     True -> setAtPos p 1
     False -> setAtPos p 0
+  modifying position (+ 4)
 
-runTilEnd :: Int -> State Memory ()
-runTilEnd pos = do
+addOp m1 m2 = do
+  add m1 m2
+  modifying position (+ 4)
+
+multiplyOp m1 m2 = do
+  multiply m1 m2
+  modifying position (+ 4)
+
+readInput = do
+  setPosToInputValue
+  modifying position (+ 2)
+
+writeOutput m1 = do
+  writeToOutput m1
+  modifying position (+ 2)
+
+run :: State Memory ()
+run = do
+  pos <- use position
   op <- getOpAtPos pos
   case op of
-    Add m1 m2 -> addAtPos pos m1 m2 *> runTilEnd (pos + 4)
-    Multiply m1 m2 -> multiplyAtPos pos m1 m2 *> runTilEnd (pos + 4)
-    ReadInput -> setPosToInputValue pos *> runTilEnd (pos + 2)
-    WriteOutput m1 -> writeToOutput pos m1 *> runTilEnd (pos + 3)
-    JumpIfTrue m1 m2 ->
-      jumpIfTrue pos m1 m2
-        >>= ( \movePos -> case movePos of
-                Noop -> runTilEnd (pos + 3)
-                NewPos p -> runTilEnd p
-            )
-    JumpIfFalse m1 m2 ->
-      jumpIfFalse pos m1 m2
-        >>= ( \movePos -> case movePos of
-                Noop -> runTilEnd (pos + 3)
-                NewPos p -> runTilEnd p
-            )
-    LessThan m1 m2 -> lessThan pos m1 m2 *> runTilEnd (pos + 4)
-    Equals m1 m2 -> equals pos m1 m2 *> runTilEnd (pos + 4)
+    Add m1 m2 -> addOp m1 m2 *> run
+    Multiply m1 m2 -> multiplyOp m1 m2 *> run
+    ReadInput -> readInput *> run
+    WriteOutput m1 -> writeOutput m1 *> run
+    JumpIfTrue m1 m2 -> jumpIfTrue m1 m2 *> run
+    JumpIfFalse m1 m2 -> jumpIfFalse m1 m2 *> run
+    LessThan m1 m2 -> lessThan m1 m2 *> run
+    Equals m1 m2 -> equals m1 m2 *> run
     End -> pure ()
