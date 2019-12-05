@@ -22,7 +22,7 @@ parseAndSolve1 = do
     i <- input
     solve1 i
 
-runIntCode is ops = execState run (Memory {_position = 0, _inputs = is, _values = ops, _outputs = []})
+-- runIntCode is ops = execState run (Memory {_position = 0, _inputs = is, _values = ops, _outputs = []})
 
 solve1 ops = viaNonEmpty head $ view outputs $ runIntCode [1] ops
 

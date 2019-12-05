@@ -190,3 +190,5 @@ run = do
     LessThan m1 m2 -> lessThan m1 m2 *> run
     Equals m1 m2 -> equals m1 m2 *> run
     End -> pure ()
+
+runIntCode is ops = execState run (Memory {_position = 0, _inputs = is, _values = ops, _outputs = []})
