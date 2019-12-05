@@ -1,6 +1,7 @@
 module Parsing where
 
 import Text.Megaparsec
+import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser a = Parsec Void Text a
@@ -12,4 +13,4 @@ runParseFile filename parser = do
   pure $ rightToMaybe result
 
 parseInteger :: Parser Int
-parseInteger = L.decimal
+parseInteger = (fmap (* (-1)) (char '-' *> L.decimal)) <|> L.decimal

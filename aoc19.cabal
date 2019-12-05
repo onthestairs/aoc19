@@ -22,7 +22,8 @@ library
                      , relude
                      , megaparsec
                      , containers
-                     , micro-recursion-schemes
+                     , recursion-schemes
+                     , lens
 
   ghc-options:         -Wall
                        -Wincomplete-uni-patterns
