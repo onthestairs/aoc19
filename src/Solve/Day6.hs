@@ -1,4 +1,4 @@
-module Solve.Day1 where
+module Solve.Day6 where
 
 import Data.Functor.Foldable
 import qualified Data.List as List

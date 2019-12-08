@@ -1,7 +1,8 @@
 module Main (main) where
 
-import Aoc19 (someFunc)
-
+import Solve.Day7
 
 main :: IO ()
-main = someFunc
+main = do
+  x <- parseAndSolve2
+  putTextLn (show x)

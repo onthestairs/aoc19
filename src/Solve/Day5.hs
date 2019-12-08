@@ -1,4 +1,4 @@
-module Solve.Day2 where
+module Solve.Day5 where
 
 import Control.Lens
 import qualified Data.Map.Strict as Map
@@ -24,7 +24,7 @@ parseAndSolve1 = do
 
 -- runIntCode is ops = execState run (Memory {_position = 0, _inputs = is, _values = ops, _outputs = []})
 
-solve1 ops = viaNonEmpty head $ view outputs $ runIntCode [1] ops
+solve1 ops = viaNonEmpty last $ view outputs $ traceShowId $ runIntCode [1] ops
 
 parseAndSolve2 = do
   input <- runParseInput
@@ -32,4 +32,4 @@ parseAndSolve2 = do
     i <- input
     solve2 i
 
-solve2 ops = viaNonEmpty head $ view outputs $ runIntCode [5] ops
+solve2 ops = viaNonEmpty last $ view outputs $ runIntCode [5] ops
