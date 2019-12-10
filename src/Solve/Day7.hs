@@ -11,13 +11,13 @@ import Text.Megaparsec hiding (State)
 import Text.Megaparsec.Char
 import Prelude hiding (execState)
 
-runParseInput :: IO (Maybe (Map.Map Int IntCode))
+runParseInput :: IO (Maybe (Map.Map Integer IntCode))
 runParseInput = runParseFile "./data/7.input" parseInput
 
-runParseInputTest :: IO (Maybe (Map.Map Int IntCode))
+runParseInputTest :: IO (Maybe (Map.Map Integer IntCode))
 runParseInputTest = runParseFile "./data/7.input.test" parseInput
 
-parseInput :: Parser (Map.Map Int IntCode)
+parseInput :: Parser (Map.Map Integer IntCode)
 parseInput = (Map.fromList . zip [0 ..]) <$> sepBy1 parseInteger (char ',') <* eof
 
 parseAndSolve1 = do
@@ -55,6 +55,6 @@ parseAndSolve2 = do
   input <- runParseInputTest
   pure $ do
     i <- input
-    pure $ solve2 i
+    solve2 i
 
 solve2 ops = viaNonEmpty maximum1 $ map (runMutual (makeInitialMemory ops)) $ take 1 (permutations [5 .. 9])

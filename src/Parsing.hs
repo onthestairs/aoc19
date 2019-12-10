@@ -12,5 +12,5 @@ runParseFile filename parser = do
   let result = runParser parser filename input
   pure $ rightToMaybe result
 
-parseInteger :: Parser Int
+parseInteger :: Integral a => Parser a
 parseInteger = (fmap (* (-1)) (char '-' *> L.decimal)) <|> L.decimal

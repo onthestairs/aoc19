@@ -29,6 +29,9 @@ library
                      , recursion-schemes
                      , lens
                      , mtl
+                     , data-has
+                     , unordered-containers
+                     , linear
 
   ghc-options:         -Wall
                        -Wincomplete-uni-patterns
